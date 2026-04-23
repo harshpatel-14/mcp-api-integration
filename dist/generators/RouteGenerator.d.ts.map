@@ -1,0 +1,1 @@
+{"version":3,"file":"RouteGenerator.d.ts","sourceRoot":"","sources":["../../src/generators/RouteGenerator.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,aAAa,EAAE,MAAM,mBAAmB,CAAC;AAGvD,qBAAa,cAAc;IACb,OAAO,CAAC,aAAa;gBAAb,aAAa,EAAE,aAAa;IAE1C,YAAY,CAAC,IAAI,EAAE,MAAM,EAAE,MAAM,EAAE,GAAG,GAAG,OAAO,CAAC,GAAG,CAAC;CAI5D"}
