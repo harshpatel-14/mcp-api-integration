@@ -11,6 +11,7 @@ export declare class ProjectAnalyzer {
     private detectValidationLibrary;
     private detectUIFramework;
     private detectPaths;
+    private detectTestsDir;
     private detectConventions;
     private detectAuthPatterns;
 }
