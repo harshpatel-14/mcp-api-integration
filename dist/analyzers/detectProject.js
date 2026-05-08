@@ -130,6 +130,8 @@ export class ProjectAnalyzer {
             }
             return path.join('src', defaultPath);
         };
+        // Detect test directory: prefer project-root-level "tests" or "e2e" when present
+        const testsPath = await this.detectTestsDir(projectDir);
         return {
             api: resolvePath('api/*', 'api/services'),
             types: resolvePath('types/*', 'types/api'),
@@ -137,7 +139,21 @@ export class ProjectAnalyzer {
             validations: resolvePath('lib/validations/*', 'lib/validations'),
             components: resolvePath('components/*', 'components'),
             pages: resolvePath('pages/*', 'pages'),
+            tests: testsPath,
         };
+    }
+    async detectTestsDir(projectDir) {
+        const candidates = ['e2e', 'tests', 'test', 'playwright'];
+        for (const dir of candidates) {
+            try {
+                await fs.access(path.join(projectDir, dir));
+                return dir;
+            }
+            catch {
+                // directory does not exist, try next
+            }
+        }
+        return 'e2e';
     }
     async detectConventions(projectDir) {
         const servicesDir = path.join(projectDir, 'src/api/services');

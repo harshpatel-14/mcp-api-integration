@@ -14,6 +14,7 @@ import { HookGenerator } from './generators/HookGenerator.js';
 import { ValidationGenerator } from './generators/ValidationGenerator.js';
 import { ComponentGenerator } from './generators/ComponentGenerator.js';
 import { RouteGenerator } from './generators/RouteGenerator.js';
+import { PlaywrightTestGenerator } from './generators/PlaywrightTestGenerator.js';
 import { ProjectAnalyzer } from './analyzers/detectProject.js';
 import { logger } from './utils/logger.js';
 import type { ParsedSwaggerSpec, ProjectConfig, GenerationResult } from './types/index.js';
@@ -138,6 +139,51 @@ const TOOLS: Tool[] = [
       required: ['resourceName', 'routeConfig', 'projectConfig'],
     },
   },
+  {
+    name: 'generate_playwright_tests',
+    description:
+      'Generate Playwright API and E2E test files for all (or selected) endpoints derived from a parsed Swagger/OpenAPI spec. Produces one API spec file and one browser E2E file per resource group, plus a shared auth fixture.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        spec: {
+          type: 'object',
+          description: 'Parsed OpenAPI specification (output of parse_swagger_spec)',
+        },
+        projectConfig: {
+          type: 'object',
+          description: 'Project configuration (output of analyze_project)',
+        },
+        endpoints: {
+          type: 'array',
+          description: 'Specific endpoint paths to generate tests for (empty = all)',
+          items: { type: 'string' },
+          default: [],
+        },
+        generateApiTests: {
+          type: 'boolean',
+          description: 'Generate Playwright API-request tests (default: true)',
+          default: true,
+        },
+        generateE2eTests: {
+          type: 'boolean',
+          description: 'Generate Playwright browser E2E tests (default: true)',
+          default: true,
+        },
+        baseUrl: {
+          type: 'string',
+          description: 'Base URL for API tests (default: http://localhost:3000)',
+          default: 'http://localhost:3000',
+        },
+        includeAuth: {
+          type: 'boolean',
+          description: 'Include authentication helpers in generated tests (default: true)',
+          default: true,
+        },
+      },
+      required: ['spec', 'projectConfig'],
+    },
+  },
 ];
 
 class SwaggerMCPServer {
@@ -188,6 +234,9 @@ class SwaggerMCPServer {
 
           case 'update_routes':
             return await this.handleUpdateRoutes(args as any);
+
+          case 'generate_playwright_tests':
+            return await this.handleGeneratePlaywrightTests(args as any);
 
           default:
             throw new Error(`Unknown tool: ${name}`);
@@ -283,6 +332,7 @@ class SwaggerMCPServer {
       hooks: [],
       validations: [],
       ui: [],
+      tests: [],
     };
 
     const typeGenerator = new TypeGenerator(projectConfig);
@@ -317,6 +367,7 @@ class SwaggerMCPServer {
                   hooks: results.hooks.length,
                   validations: results.validations.length,
                   uiComponents: results.ui.length,
+                  tests: results.tests.length,
                 },
                 files: [
                   ...results.types,
@@ -324,6 +375,7 @@ class SwaggerMCPServer {
                   ...results.hooks,
                   ...results.validations,
                   ...results.ui,
+                  ...results.tests,
                 ],
               },
             },
@@ -386,6 +438,48 @@ class SwaggerMCPServer {
               success: true,
               message: 'Routes updated successfully',
               data: updated,
+            },
+            null,
+            2
+          ),
+        },
+      ],
+    };
+  }
+
+  private async handleGeneratePlaywrightTests(args: any) {
+    const {
+      spec,
+      projectConfig,
+      endpoints = [],
+      generateApiTests = true,
+      generateE2eTests = true,
+      baseUrl = 'http://localhost:3000',
+      includeAuth = true,
+    } = args;
+
+    logger.info('Generating Playwright tests...');
+
+    const testGenerator = new PlaywrightTestGenerator(projectConfig);
+    const generatedFiles = await testGenerator.generate(spec, endpoints, {
+      generateApiTests,
+      generateE2eTests,
+      baseUrl,
+      includeAuth,
+    });
+
+    return {
+      content: [
+        {
+          type: 'text' as const,
+          text: JSON.stringify(
+            {
+              success: true,
+              message: 'Playwright tests generated successfully',
+              data: {
+                generated: generatedFiles.length,
+                files: generatedFiles,
+              },
             },
             null,
             2

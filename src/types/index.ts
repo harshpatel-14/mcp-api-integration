@@ -15,6 +15,7 @@ export interface ProjectConfig {
     validations: string;
     components: string;
     pages: string;
+    tests: string;
   };
   conventions: {
     serviceNamePattern: string;
@@ -41,6 +42,7 @@ export interface GenerationResult {
   hooks: string[];
   validations: string[];
   ui: string[];
+  tests: string[];
 }
 
 export interface EndpointInfo {
@@ -63,5 +65,5 @@ export interface MCPToolResult {
 
 export interface GeneratedFile {
   path: string;
-  type: 'type' | 'service' | 'hook' | 'validation' | 'component' | 'route';
+  type: 'type' | 'service' | 'hook' | 'validation' | 'component' | 'route' | 'test';
 }
