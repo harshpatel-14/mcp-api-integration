@@ -595,6 +595,7 @@ ${authHelper}
     }));
   }
 
+  // TODO: implement incremental update when a single endpoint changes
   async updateEndpoint(endpointPath: string, method: string, spec: any): Promise<string | null> {
     logger.info(`Updating Playwright tests for endpoint: ${method.toUpperCase()} ${endpointPath}`);
     return null;
