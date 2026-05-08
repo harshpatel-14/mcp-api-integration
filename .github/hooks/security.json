@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "name": "log-session-start",
+        "command": "mkdir -p .logs && echo \"[$(date)] Agent session started\" >> .logs/agent-sessions.log"
+      }
+    ],
+    "preToolUse": [
+      {
+        "name": "log-tool-execution",
+        "command": "mkdir -p .logs && echo \"[$(date)] Tool execution requested: $TOOL_NAME\" >> .logs/tool-usage.log"
+      }
+    ]
+  }
+}
